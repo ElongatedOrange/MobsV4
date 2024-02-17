@@ -59,7 +59,7 @@ public class BlazeMob extends BaseMob {
         ArrayList<String> lore = new ArrayList<>();
         lore.add("  " + getPrefix() + "⚠ Forged in Flames");
         lore.add("  §fIf in §elava §fget §eStrength 2");
-        lore.add("  §ffor 20 seconds.");
+        lore.add("  §ffor 10 seconds.");
 
         return lore;
     }

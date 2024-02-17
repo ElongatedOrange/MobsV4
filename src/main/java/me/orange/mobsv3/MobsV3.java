@@ -155,6 +155,7 @@ public final class MobsV3 extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new ShulkerSneakListener(this), this);
         getServer().getPluginManager().registerEvents(new PlayerDeathAndRespawnListener(), this);
         getServer().getPluginManager().registerEvents(new ChickenFallDamageListener(this), this);
+        getServer().getPluginManager().registerEvents(new BlazeLavaListener(this), this);
         //getServer().getPluginManager().registerEvents(new FireballDamageListener(this), this);
         getServer().getPluginManager().registerEvents(new ArrowImpactListener(), this);
         //getServer().getPluginManager().registerEvents(new SpecialEvents(this), this);

@@ -52,18 +52,20 @@ public class MobManager implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player)) {
+            sender.sendMessage("This command can only be run by a player.");
             return true;
         }
 
         Player player = (Player) sender;
 
-        // Only operators are allowed to execute the command
-        if (!player.isOp()) {
-            player.sendMessage("You do not have permission to use this command.");
-            return true;
-        }
-
+        // Handle the /mob command
         if (label.equalsIgnoreCase("mob")) {
+            // Check if the player is an operator
+            if (!player.isOp()) {
+                player.sendMessage("You do not have permission to use this command.");
+                return true;
+            }
+
             if (args.length < 1) {
                 player.sendMessage("Usage: /mob <mobName> [playerName]");
                 return true;
@@ -95,10 +97,16 @@ public class MobManager implements CommandExecutor {
                 return true;
             }
 
+            // Schedule the mob assignment
             MobsV3.MOBS.scheduleTaskLater(() -> MobsV3.setMob(target, mob), 4);
             player.sendMessage("Mob " + mobName + " assigned to " + target.getName() + ".");
-        } else if (label.equalsIgnoreCase("guide"))
+        }
+
+        // Handle the /guide command
+        else if (label.equalsIgnoreCase("guide")) {
+            // This command is available to all players
             player.openInventory(MobGuide.inventory);
+        }
 
         return true;
     }

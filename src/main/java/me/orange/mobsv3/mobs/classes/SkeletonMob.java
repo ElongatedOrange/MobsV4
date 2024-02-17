@@ -77,7 +77,7 @@ public class SkeletonMob extends BaseMob {
                     Arrow arrow = player.launchProjectile(Arrow.class);
                     arrow.setVelocity(player.getLocation().getDirection().multiply(5)); // Adjust speed
                     // Tag the arrow with metadata
-                    arrow.setMetadata("TrueDamageArrow", new FixedMetadataValue(MobsV3.MOBS, true));
+                    arrow.setDamage(5);
                     // Play shooting sound
                     player.playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1.0F, 1.0F);
                 }

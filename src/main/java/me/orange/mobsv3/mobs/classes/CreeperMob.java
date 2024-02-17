@@ -93,21 +93,23 @@ public class CreeperMob extends BaseMob {
             @Override
             public void run() {
                 // Create an explosion effect without breaking blocks or directly damaging entities
-                p.getWorld().createExplosion(p.getLocation(), 2.0F, false, true);
+                p.getWorld().createExplosion(p.getLocation(), 2.0F, true, true);
 
                 // Manually deal damage to nearby entities
                 for (Entity entity : p.getNearbyEntities(4.0, 4.0, 4.0)) {
                     if (entity instanceof LivingEntity) {
                         LivingEntity nearbyPlayer = (Player) entity;
 
+                        /*
                         // Directly set the health, considering current health and max health
-                        double newHealth = nearbyPlayer.getHealth() - 6.0; // 5 hearts worth of damage
+                        double newHealth = nearbyPlayer.getHealth() - 10.0; // 5 hearts worth of damage
                         if (newHealth < 0) newHealth = 0; // Ensure not setting health below 0
 
                         // Apply "true damage" by directly adjusting health
                         nearbyPlayer.setHealth(newHealth);
 
-                        nearbyPlayer.damage(1, p);
+                         */
+                        nearbyPlayer.damage(55, p);
                     }
                 }
             }
