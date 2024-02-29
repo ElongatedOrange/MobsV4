@@ -31,6 +31,16 @@ public class ShulkerMob extends BaseMob {
     }
 
     @Override
+    public String getPrimaryEmoji() {
+        return getPrefix() + "⬆";
+    }
+
+    @Override
+    public String getAltEmoji() {
+        return null;
+    }
+
+    @Override
     public String getAlt() {
         return null;
     }
@@ -41,7 +51,7 @@ public class ShulkerMob extends BaseMob {
     }
 
     @Override
-    public ArrayList<String> getLore(ItemStack token) {
+    public ArrayList<String> getLore(Player token) {
         // Lore
         ArrayList<String> lore = new ArrayList<>();
         lore.add("§9Token Abilities:");
@@ -57,7 +67,7 @@ public class ShulkerMob extends BaseMob {
     public ArrayList<String> getSpecial() {
         ArrayList<String> lore = new ArrayList<>();
         lore.add("  " + getPrefix() + "⛑ Hardened Shell §8(Crouch)");
-        lore.add("  §fCrouching gives §eResistance 1");
+        lore.add("  §fCrouching gives §eResistance 2");
 
         return lore;
     }

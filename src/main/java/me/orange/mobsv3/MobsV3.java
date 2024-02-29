@@ -6,6 +6,7 @@ import me.orange.mobsv3.mobs.BaseMob;
 import me.orange.mobsv3.mobs.Cooldowns;
 import me.orange.mobsv3.mobs.ModelData;
 import me.orange.mobsv3.mobs.classes.ResetMob;
+import me.orange.mobsv3.ui.CustomItemGUI;
 import me.orange.mobsv3.ui.MobGuide;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -161,6 +162,9 @@ public final class MobsV3 extends JavaPlugin {
         //getServer().getPluginManager().registerEvents(new SpecialEvents(this), this);
         getServer().getPluginManager().registerEvents(new MobGuide(), this);
         //getServer().getPluginManager().registerEvents(new RecipeManager(), this);
+
+        this.getCommand("mobsitems").setExecutor(new CustomItemCommand());
+        this.getServer().getPluginManager().registerEvents(new CustomItemGUI(), this);
 
         //RecipeManager.loadRecipes();
 

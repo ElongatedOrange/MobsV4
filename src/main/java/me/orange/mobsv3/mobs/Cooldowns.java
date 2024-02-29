@@ -1,12 +1,18 @@
 package me.orange.mobsv3.mobs;
 
+import me.orange.mobsv3.MobManager;
 import me.orange.mobsv3.MobsV3;
 import me.orange.mobsv3.hex.HexUtils;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.TextComponent;
+import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,32 +22,35 @@ import java.util.UUID;
 public class Cooldowns {
     public HashMap<UUID, Integer> SLOWDOWN = new HashMap<>();
 
-    public HashMap<UUID, Long> TURTLE = new HashMap<>();
-    public HashMap<UUID, Long> WARDEN = new HashMap<>();
-    public HashMap<UUID, Long> WARDEN_ALT = new HashMap<>();
-    public HashMap<UUID, Long> CREEPER = new HashMap<>();
-    public HashMap<UUID, Long> CREEPER_ALT = new HashMap<>();
-    public HashMap<UUID, Long> SKELETON = new HashMap<>();
-    public HashMap<UUID, Long> CHICKEN = new HashMap<>();
-    public HashMap<UUID, Long> CHICKEN_ALT = new HashMap<>();
-    public HashMap<UUID, Long> BLAZE = new HashMap<>();
-    public HashMap<UUID, Long> SPIDER = new HashMap<>();
-    public HashMap<UUID, Long> ENDERMAN = new HashMap<>();
-    public HashMap<UUID, Long> ZOMBIE = new HashMap<>();
-    public HashMap<UUID, Long> VILLAGER = new HashMap<>();
-    public HashMap<UUID, Long> VILLAGER_ALT = new HashMap<>();
-    public HashMap<UUID, Long> DRAGON = new HashMap<>();
-    public HashMap<UUID, Long> DRAGON_ALT = new HashMap<>();
-    public HashMap<UUID, Long> SHULKER = new HashMap<>();
-    public HashMap<UUID, Long> SHULKER_ALT = new HashMap<>();
-    public HashMap<UUID, Long> PIGLIN = new HashMap<>();
-    public HashMap<UUID, Long> WITHER = new HashMap<>();
-    public HashMap<UUID, Long> WITHER_ALT = new HashMap<>();
-    public HashMap<UUID, Long> WITCH = new HashMap<>();
-    public HashMap<UUID, Long> WITCH_ALT = new HashMap<>();
-    public HashMap<UUID, Long> ELDER_GUARDIAN = new HashMap<>();
+    public static HashMap<UUID, Long> TURTLE = new HashMap<>();
+    public static HashMap<UUID, Long> WARDEN = new HashMap<>();
+    public static HashMap<UUID, Long> WARDEN_ALT = new HashMap<>();
+    public static HashMap<UUID, Long> CREEPER = new HashMap<>();
+    public static HashMap<UUID, Long> CREEPER_ALT = new HashMap<>();
+    public static HashMap<UUID, Long> SKELETON = new HashMap<>();
+    public static HashMap<UUID, Long> CHICKEN = new HashMap<>();
+    public static HashMap<UUID, Long> CHICKEN_ALT = new HashMap<>();
+    public static HashMap<UUID, Long> BLAZE = new HashMap<>();
+    public static HashMap<UUID, Long> BLAZE_ALT = new HashMap<>();
+    public static HashMap<UUID, Long> SPIDER = new HashMap<>();
+    public static HashMap<UUID, Long> ENDERMAN = new HashMap<>();
+    public static HashMap<UUID, Long> ZOMBIE = new HashMap<>();
+    public static HashMap<UUID, Long> VILLAGER = new HashMap<>();
+    public static HashMap<UUID, Long> VILLAGER_ALT = new HashMap<>();
+    public static HashMap<UUID, Long> DRAGON = new HashMap<>();
+    public static HashMap<UUID, Long> DRAGON_ALT = new HashMap<>();
+    public static HashMap<UUID, Long> SHULKER = new HashMap<>();
+    public static HashMap<UUID, Long> SHULKER_ALT = new HashMap<>();
+    public static HashMap<UUID, Long> PIGLIN = new HashMap<>();
+    public static HashMap<UUID, Long> WITHER = new HashMap<>();
+    public static HashMap<UUID, Long> WITHER_ALT = new HashMap<>();
+    public static HashMap<UUID, Long> WITCH = new HashMap<>();
+    public static HashMap<UUID, Long> WITCH_ALT = new HashMap<>();
+    public static HashMap<UUID, Long> ELDER_GUARDIAN = new HashMap<>();
 
-    public static Boolean handleCooldown(Player p, String name) {
+    public static final HashMap<UUID, BukkitTask> cooldownDisplayTasks = new HashMap<>();
+
+    public static boolean handleCooldown(Player p, String name) {
         String isAlt = "";
         String displayName = name;
 
@@ -52,61 +61,93 @@ public class Cooldowns {
 
         displayName = displayName.replace("_", " ");
 
+        startActionBarUpdateTask(p, name); // Ensure the action bar update task is running
 
-        if (MobsV3.COOLDOWNS.onCooldown(name, p, p.getInventory().getItemInMainHand()) > 0) {
-            if (!MobsV3.COOLDOWNS.SLOWDOWN.containsKey(p.getUniqueId()))
-                MobsV3.COOLDOWNS.SLOWDOWN.put(p.getUniqueId(), 0);
-
-            if (MobsV3.COOLDOWNS.SLOWDOWN.get(p.getUniqueId()) >= 4) {
-                // lol dont run the other nerd stuff
-            } else if (MobsV3.COOLDOWNS.SLOWDOWN.get(p.getUniqueId()) == 3) {
-                slowdownTick(p);
-
-                p.sendMessage(HexUtils.format("#A5133B----------------------------------------------\n") +
-                        "§cSlow Down!\n" +
-                        HexUtils.format("#A5133B----------------------------------------------"));
-            } else {
-                slowdownTick(p);
-
-                p.sendMessage("§9----------------------------------------------\n" +
-                        "§cThe " + displayName + "'s" + isAlt + " ability is currently on cooldown! " +
-                        "§e(" + MobsV3.COOLDOWNS.onCooldown(name, p, p.getInventory().getItemInMainHand()) +
-                        "/" + MobsV3.COOLDOWNS.getCooldown(name, p.getInventory().getItemInMainHand()) + ")\n" +
-                        "§9----------------------------------------------");
-            }
-
+        long cooldownTime = onCooldown(name, p);
+        if (cooldownTime > 0) {
+            // Ability is on cooldown, return true to indicate the ability shouldn't be used
             return true;
         } else {
-            MobsV3.COOLDOWNS.setCooldown(name, p, System.currentTimeMillis());
-
-            final String finName = displayName;
-            final String finAlt = isAlt;
-
-            MobsV3.MOBS.scheduleTaskLater(() -> {
-                p.sendMessage("§6----------------------------------------------\n" +
-                        "§aThe " + finName + "'s" + finAlt + " ability is ready!\n" +
-                        "§6----------------------------------------------");
-
-                p.playSound(p, Sound.BLOCK_NOTE_BLOCK_CHIME, 1, 1);
-            }, MobsV3.COOLDOWNS.onCooldown(name, p, p.getInventory().getItemInMainHand()) * 20);
-
-            return false;
+            // Ability is not on cooldown, set the cooldown now
+            setCooldown(name, p, System.currentTimeMillis());
+            return false; // Ability is ready to be used
         }
     }
 
-    public static void slowdownTick(Player p) {
-        final int old;
-
-        MobsV3.COOLDOWNS.SLOWDOWN.replace(p.getUniqueId(), MobsV3.COOLDOWNS.SLOWDOWN.get(p.getUniqueId()) + 1);
-        old = MobsV3.COOLDOWNS.SLOWDOWN.get(p.getUniqueId()) + 1;
-
-        MobsV3.MOBS.scheduleTaskLater(() -> {
-            if (old == MobsV3.COOLDOWNS.SLOWDOWN.get(p.getUniqueId()))
-                MobsV3.COOLDOWNS.SLOWDOWN.replace(p.getUniqueId(), 0);
-        }, 60);
+    // Utility method to get the cooldown status of an ability for the action bar
+    private static String getAbilityStatus(String abilityName, Player player) {
+        long cooldownTime = onCooldown(abilityName, player);
+        if (cooldownTime > 0) {
+            return "§eCooldown: " + cooldownTime + "s";
+        } else {
+            return "§aReady!";
+        }
     }
 
-    public HashMap<UUID, Long> getType(String type) {
+
+    public static void startActionBarUpdateTask(Player player, String abilityName) {
+        // Early exit if no ability is specified or it's set to "None"
+        if (abilityName == null || abilityName.equals("None")) {
+            return;
+        }
+
+        BukkitTask existingTask = cooldownDisplayTasks.get(player.getUniqueId());
+        if (existingTask != null) {
+            // A task is already running for this player, no need to start another
+            return;
+        }
+
+        // Fetch the BaseMob instance; adjust for your implementation
+        BaseMob mob = MobManager.findMobByName(abilityName.replace("-Alt", ""));
+        if (mob == null) {
+            Bukkit.getLogger().warning("Mob not found for abilityName: " + abilityName);
+            return;
+        }
+
+        // Setup a task to update the action bar
+        BukkitTask actionBarTask = new BukkitRunnable() {
+            @Override
+            public void run() {
+                // Fetching the primary and alternate emojis
+                String primaryEmoji = mob.getPrimaryEmoji();
+                String altEmoji = mob.getAlt() != null && !mob.getAlt().isEmpty() ? mob.getAltEmoji() : "";
+
+                // Adjusting the getAbilityStatus calls to use emojis
+                String primaryAbilityStatus = primaryEmoji + " " + getAbilityStatus(mob.getName(), player);
+                String altAbilityStatus = "";
+
+                // If there's an alternate ability, fetch its cooldown status using the actual ability name
+                if (!altEmoji.isEmpty()) {
+                    String actualAltAbilityName = getActualAbilityName(mob.getName(), "Click");
+                    altAbilityStatus = altEmoji + " " + getAbilityStatus(actualAltAbilityName, player);
+                }
+
+                // Constructing the action bar message
+                String actionBarMessage = primaryAbilityStatus;
+                if (!altAbilityStatus.isEmpty()) {
+                    actionBarMessage += " | " + altAbilityStatus;
+                }
+
+                player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(actionBarMessage));
+            }
+        }.runTaskTimer(MobsV3.MOBS, 0L, 20L);
+
+        cooldownDisplayTasks.put(player.getUniqueId(), actionBarTask);
+    }
+
+    private static String getActualAbilityName(String mobName, String placeholder) {
+        if ("Witch".equals(mobName) && "Click".equals(placeholder)) {
+            return "Witch-Alt"; // Replace with the actual ability name
+        } else if ("Blaze".equals(mobName) && "Click".equals(placeholder)) {
+            return "Blaze-Alt"; // Replace with the actual ability name
+        } {
+
+        }
+        // Handle other mobs and abilities as needed
+        return placeholder; // Fallback to the placeholder if no mapping is found
+    }
+
+    public static HashMap<UUID, Long> getType(String type) {
         HashMap<UUID, Long> COOLDOWN = new HashMap<>();
 
         if (type.equalsIgnoreCase("Turtle"))
@@ -139,8 +180,8 @@ public class Cooldowns {
             COOLDOWN = WITHER;
         else if (type.equalsIgnoreCase("Warden-Alt"))
             COOLDOWN = WARDEN_ALT;
-        else if (type.equalsIgnoreCase("Creeper-Alt"))
-            COOLDOWN = CREEPER_ALT;
+        else if (type.equalsIgnoreCase("Blaze-Alt"))
+            COOLDOWN = BLAZE_ALT;
         else if (type.equalsIgnoreCase("Dragon-Alt"))
             COOLDOWN = DRAGON_ALT;
         else if (type.equalsIgnoreCase("Shulker-Alt"))
@@ -162,20 +203,43 @@ public class Cooldowns {
         return COOLDOWN;
     }
 
-    public int getCooldown(String type, ItemStack item) {
-        return getSeconds(getType(type));
+    public int getCooldown(String type, Player player) {
+        return getSeconds(getType(type), player);
     }
 
-    public int getSeconds(HashMap<UUID, Long> COOLDOWN) {
-        int seconds = 60;
-        int levelBonus = 0;
-
-        return seconds;
+    // Method to check if the player has the "Cooldown Counter" item
+    private static boolean hasCooldownCounter(Player player) {
+        if (player != null) {
+            for (ItemStack item : player.getInventory().getContents()) {
+                if (item != null && item.hasItemMeta() && item.getItemMeta().hasDisplayName()) {
+                    if (item.getItemMeta().getDisplayName().equals("§6Cooldown Counter")) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        } else {
+            return false;
+        }
     }
 
-    public Long onCooldown(String type, Player key, ItemStack item) {
+
+    // Modified getSeconds method to account for the "Cooldown Counter" item
+    public static int getSeconds(HashMap<UUID, Long> COOLDOWN, Player player) {
+        int defaultSeconds = 60;
+        int cooldownCounterSeconds = 30; // Reduced cooldown duration
+
+        // Check if the player has the "Cooldown Counter" item
+        if (hasCooldownCounter(player)) {
+            return cooldownCounterSeconds;
+        } else {
+            return defaultSeconds;
+        }
+    }
+
+    public static Long onCooldown(String type, Player key) {
         HashMap<UUID, Long> COOLDOWN = getType(type);
-        int seconds = getSeconds(COOLDOWN);
+        int seconds = getSeconds(COOLDOWN, key);
 
         if (COOLDOWN.containsKey(key.getUniqueId())) {
             return ((COOLDOWN.get(key.getUniqueId()) / 1000) + seconds) - (System.currentTimeMillis() / 1000);
@@ -184,7 +248,7 @@ public class Cooldowns {
         return 0L;
     }
 
-    public void setCooldown(String type, Player key, Long value) {
+    public static void setCooldown(String type, Player key, Long value) {
         HashMap<UUID, Long> COOLDOWN = getType(type);
         if (COOLDOWN.containsKey(key.getUniqueId())) {
             COOLDOWN.replace(key.getUniqueId(), value);

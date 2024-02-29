@@ -4,17 +4,10 @@ import me.orange.mobsv3.MobsV3;
 import me.orange.mobsv3.hex.HexUtils;
 import me.orange.mobsv3.mobs.BaseMob;
 import me.orange.mobsv3.mobs.Cooldowns;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Particle;
-import org.bukkit.Sound;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.Fireball;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.*;
+import org.bukkit.entity.*;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
@@ -33,8 +26,18 @@ public class BlazeMob extends BaseMob {
     }
 
     @Override
+    public String getPrimaryEmoji() {
+        return "§c🔥";
+    }
+
+    @Override
+    public String getAltEmoji() {
+        return "§c🎆";
+    }
+
+    @Override
     public String getAlt() {
-        return null;
+        return "Click";
     }
 
     @Override
@@ -42,12 +45,16 @@ public class BlazeMob extends BaseMob {
         return 22;
     }
 
-    public ArrayList<String> getLore(ItemStack token) {
+    public ArrayList<String> getLore(Player token) {
         // Lore
         ArrayList<String> lore = new ArrayList<>();
         lore.add("§9Token Abilities:");
         lore.add("  " + getPrefix() + "🔥 Flamethrower §8(Right Click)");
         lore.add("  §fShoot a §eFlamethrower §fin the");
+        lore.add("  §fdirection you are facing.");
+        lore.add("");
+        lore.add("  " + getPrefix() + "🎆 Firework §8(Left Click)");
+        lore.add("  §fLaunch a §efirework §fin the");
         lore.add("  §fdirection you are facing.");
         lore.add("  §7(" + MobsV3.COOLDOWNS.getCooldown(name, token) + "s)");
 
@@ -120,9 +127,70 @@ public class BlazeMob extends BaseMob {
         }.runTaskTimer(MobsV3.MOBS, 0L, 10L);
     }
 
-
     @Override
     public Boolean performAlt(Player player) {
-        return null;
+        if (Cooldowns.handleCooldown(player, name + "-Alt")) return false;
+
+        final World world = player.getWorld();
+        Location startLocation = player.getEyeLocation();
+        Vector direction = startLocation.getDirection().normalize(); // Ensure direction is normalized
+
+        new BukkitRunnable() {
+            double distance = 0.0; // Track the distance traveled
+            final double maxDistance = 30.0; // Maximum distance
+            final double step = 2.5; // Distance to move each tick
+
+            @Override
+            public void run() {
+                distance += step;
+                if (distance > maxDistance) {
+                    this.cancel(); // Stop if max distance reached
+                    return;
+                }
+
+                // Calculate new location for this tick
+                Location currentLocation = startLocation.clone().add(direction.clone().multiply(distance));
+                world.spawnParticle(Particle.FLAME, currentLocation, 1, 0, 0, 0, 0);
+
+                // Check for entities in a small radius around the current location
+                for (Entity entity : world.getNearbyEntities(currentLocation, 1.5, 1.5, 1.5)) {
+                    if (entity instanceof LivingEntity && !entity.equals(player)) {
+                        // Damage the entity
+                        ((LivingEntity) entity).damage(30, player);
+                        // Create explosion effect
+                        createExplosion(currentLocation, world);
+                        this.cancel(); // End the beam
+                        return;
+                    }
+                }
+
+                // Check if the beam has hit a block
+                if (currentLocation.getBlock().getType() != Material.AIR) {
+                    createExplosion(currentLocation, world);
+                    this.cancel(); // End the beam
+                }
+            }
+        }.runTaskTimer(MobsV3.MOBS, 0L, 1L); // Schedule to run every tick
+
+        return true;
     }
+
+    private void createExplosion(Location loc, World world) {
+        int numberOfParticles = 150; // Increase number of particles for a bigger explosion
+        double spread = 1.5; // Increase spread for a wider explosion
+
+        for (int i = 0; i < numberOfParticles; i++) {
+            double angle = Math.random() * Math.PI * 2; // Random angle for horizontal direction
+            double zAngle = Math.random() * Math.PI * 2; // Random angle for vertical direction
+            double x = Math.cos(angle) * Math.sin(zAngle);
+            double y = Math.cos(zAngle);
+            double z = Math.sin(angle) * Math.sin(zAngle);
+
+            Vector direction = new Vector(x, y, z).normalize().multiply(spread); // Apply spread to the direction
+            world.spawnParticle(Particle.FLAME, loc, 0, direction.getX(), direction.getY(), direction.getZ(), 0.2); // Increase speed for a more dynamic explosion
+        }
+        world.playSound(loc, Sound.ENTITY_GENERIC_EXPLODE, 1F, 1F); // Explosion sound
+    }
+
+
 }

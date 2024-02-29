@@ -7,3 +7,5 @@ commands:
     description: Makes you a mob from the Mobs SMP
   guide:
     description: Displays info about each Mob
+  mobsitems:
+    description: Opens a GUI of custom items

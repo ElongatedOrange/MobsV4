@@ -3,6 +3,7 @@ package me.orange.mobsv3.ui;
 import me.orange.mobsv3.MobManager;
 import me.orange.mobsv3.MobsV3;
 import me.orange.mobsv3.mobs.BaseMob;
+import me.orange.mobsv3.mobs.Cooldowns;
 import me.orange.mobsv3.mobs.classes.ResetMob;
 import org.bukkit.ChatColor;
 import org.bukkit.Sound;
@@ -54,6 +55,7 @@ public class MobSelectTitle {
 
                     p.setPlayerListName(mobSelected.getPrefix() + "[" + mobSelected.getName() + "] " + p.getName());
                     p.setDisplayName(mobSelected.getPrefix() + "[" + mobSelected.getName() + "] " + p.getName());
+                    Cooldowns.startActionBarUpdateTask(p, mobSelected.getName());
 
                     cancel();
                 }

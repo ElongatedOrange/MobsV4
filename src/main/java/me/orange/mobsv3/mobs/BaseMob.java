@@ -10,11 +10,15 @@ public abstract class BaseMob {
 
     public abstract String getPrefix();
 
+    public abstract String getPrimaryEmoji();
+
+    public abstract String getAltEmoji();
+
     public abstract String getAlt();
 
     public abstract int getHealth();
 
-    public abstract ArrayList<String> getLore(ItemStack token);
+    public abstract ArrayList<String> getLore(Player player);
 
     public abstract ArrayList<String> getSpecial();
 

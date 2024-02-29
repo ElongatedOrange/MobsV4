@@ -29,6 +29,16 @@ public class WardenMob extends BaseMob {
     }
 
     @Override
+    public String getPrimaryEmoji() {
+        return getPrefix() + "💥";
+    }
+
+    @Override
+    public String getAltEmoji() {
+        return null;
+    }
+
+    @Override
     public String getAlt() {
         return null;
     }
@@ -39,13 +49,14 @@ public class WardenMob extends BaseMob {
     }
 
     @Override
-    public ArrayList<String> getLore(ItemStack token) {
+    public ArrayList<String> getLore(Player token) {
         // Lore
         ArrayList<String> lore = new ArrayList<>();
         lore.add("§9Token Abilities:");
         lore.add("  " + getPrefix() + "💥 Sonic Boom §8(Right Click)");
         lore.add("  §fShoot the Warden's §eSonic Boom");
-        lore.add("  §fin the direction you are facing.");
+        lore.add("  §fin the direction you are facing");
+        lore.add("  §fand get §eStrength 2 §ffor 30 seconds");
         lore.add("  §7(" + MobsV3.COOLDOWNS.getCooldown(name, token) + "s)");
         return lore;
     }
@@ -95,7 +106,7 @@ public class WardenMob extends BaseMob {
                 hit.damage(2.0, p);
             });
         }
-        p.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, 300, 1, false, false, true));
+        p.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, 600, 1, false, false, true));
     }
 
     @Override

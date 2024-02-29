@@ -12,7 +12,6 @@ public class ModelData {
             case "Turtle" -> 6;
             case "Warden" -> 7;
             case "Witch" -> 8;
-            case "Wither-Skeleton" -> 9;
         };
     }
 }

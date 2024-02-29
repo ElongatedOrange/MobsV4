@@ -28,6 +28,16 @@ public class ChickenMob extends BaseMob {
     }
 
     @Override
+    public String getPrimaryEmoji() {
+        return getPrefix() + "🪶";
+    }
+
+    @Override
+    public String getAltEmoji() {
+        return null;
+    }
+
+    @Override
     public String getAlt() {
         return null;
     }
@@ -38,13 +48,13 @@ public class ChickenMob extends BaseMob {
     }
 
     @Override
-    public ArrayList<String> getLore(ItemStack token) {
+    public ArrayList<String> getLore(Player player) {
         // Lore
         ArrayList<String> lore = new ArrayList<>();
         lore.add("§9Token Abilities:");
         lore.add("  " + getPrefix() + "🪶 Fast AF §8(Right Click)");
-        lore.add("  §fGain §eHaste §ffor §c10 §fseconds.");
-        lore.add("  §7(" + MobsV3.COOLDOWNS.getCooldown(name, token) + "s)");
+        lore.add("  §fGain §eHaste §ffor §c15 §fseconds.");
+        lore.add("  §7(" + MobsV3.COOLDOWNS.getCooldown(name, player) + "s)");
 
         return lore;
     }
@@ -75,7 +85,7 @@ public class ChickenMob extends BaseMob {
 
         Bukkit.getServer().getOnlinePlayers().forEach(player -> player.playSound(p.getLocation(), Sound.ENTITY_BAT_TAKEOFF, 1.0f, 1.0f));
 
-        p.addPotionEffect(new PotionEffect(PotionEffectType.FAST_DIGGING, 200, 9, false, false, false));
+        p.addPotionEffect(new PotionEffect(PotionEffectType.FAST_DIGGING, 300, 9, false, false, false));
     }
 
     public void Egg(Player p) {

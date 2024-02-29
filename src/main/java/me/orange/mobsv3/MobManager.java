@@ -8,8 +8,11 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.util.ArrayList;
+
+import static me.orange.mobsv3.mobs.Cooldowns.cooldownDisplayTasks;
 
 public class MobManager implements CommandExecutor {
     private static MobsV3 plugin;
@@ -99,6 +102,7 @@ public class MobManager implements CommandExecutor {
 
             // Schedule the mob assignment
             MobsV3.MOBS.scheduleTaskLater(() -> MobsV3.setMob(target, mob), 4);
+            clearActionBarTaskForPlayer(player);
             player.sendMessage("Mob " + mobName + " assigned to " + target.getName() + ".");
         }
 
@@ -109,6 +113,13 @@ public class MobManager implements CommandExecutor {
         }
 
         return true;
+    }
+
+    public static void clearActionBarTaskForPlayer(Player player) {
+        BukkitTask task = cooldownDisplayTasks.remove(player.getUniqueId());
+        if (task != null) {
+            task.cancel();
+        }
     }
 
 }

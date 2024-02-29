@@ -26,6 +26,16 @@ public class TurtleMob extends BaseMob {
     }
 
     @Override
+    public String getPrimaryEmoji() {
+        return getPrefix() + "🪨";
+    }
+
+    @Override
+    public String getAltEmoji() {
+        return null;
+    }
+
+    @Override
     public String getAlt() {
         return null;
     }
@@ -36,7 +46,7 @@ public class TurtleMob extends BaseMob {
     }
 
     @Override
-    public ArrayList<String> getLore(ItemStack token) {
+    public ArrayList<String> getLore(Player token) {
         // Lore
         ArrayList<String> lore = new ArrayList<>();
         lore.add("§9Token Abilities:");

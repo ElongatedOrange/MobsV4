@@ -3,6 +3,7 @@ package me.orange.mobsv3.listeners;
 import me.orange.mobsv3.MobManager;
 import me.orange.mobsv3.MobsV3;
 import me.orange.mobsv3.mobs.BaseMob;
+import me.orange.mobsv3.mobs.Cooldowns;
 import me.orange.mobsv3.ui.MobSelectTitle;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -24,18 +25,22 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.AnvilInventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import static me.orange.mobsv3.mobs.Cooldowns.cooldownDisplayTasks;
+import static me.orange.mobsv3.mobs.Cooldowns.startActionBarUpdateTask;
 import static org.bukkit.potion.PotionEffect.INFINITE_DURATION;
 
 public class EventManager implements Listener {
@@ -69,6 +74,7 @@ public class EventManager implements Listener {
                     mob.performAlt(p); // Perform the alternate action associated with the mob
                 }
             }
+            //MobsV3.MOBS.clearActionBarTaskForPlayer(p);
         }
     }
 
@@ -123,14 +129,26 @@ public class EventManager implements Listener {
             // The player does not have a mob assigned, treat as a new player
             // Schedule to assign a random mob
             MobsV3.MOBS.scheduleTaskLater(() -> {
-                // Assuming pickRandomMob method assigns a random mob to the player
-                // and updates playerData.yml accordingly
                 MobSelectTitle.pickRandomMob(player);
             }, 100); // 100 ticks delay
         } else {
             BaseMob mob = MobManager.findMobByName(mobName);
             player.setPlayerListName(mob.getPrefix() + "[" + mob.getName() + "] " + player.getName());
             player.setDisplayName(mob.getPrefix() + "[" + mob.getName() + "] " + player.getName());
+            Cooldowns.startActionBarUpdateTask(player, mobName);
+        }
+    }
+
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        Player player = event.getPlayer();
+        clearActionBarTaskForPlayer(player);
+    }
+
+    public static void clearActionBarTaskForPlayer(Player player) {
+        BukkitTask task = cooldownDisplayTasks.remove(player.getUniqueId());
+        if (task != null) {
+            task.cancel();
         }
     }
 

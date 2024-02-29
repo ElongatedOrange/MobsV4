@@ -33,6 +33,16 @@ public class WitchMob extends BaseMob {
     }
 
     @Override
+    public String getPrimaryEmoji() {
+        return getPrefix() + "⚡";
+    }
+
+    @Override
+    public String getAltEmoji() {
+        return getPrefix() + "🍷";
+    }
+
+    @Override
     public String getAlt() {
         return "Click";
     }
@@ -43,7 +53,7 @@ public class WitchMob extends BaseMob {
     }
 
     @Override
-    public ArrayList<String> getLore(ItemStack token) {
+    public ArrayList<String> getLore(Player token) {
         // Lore
         ArrayList<String> lore = new ArrayList<>();
         lore.add("§9Token Abilities:");
@@ -52,8 +62,8 @@ public class WitchMob extends BaseMob {
         lore.add("  §fyou with §elighning §fand receive §eStrength §fand");
         lore.add("  §eSpeed.");
         lore.add("");
-        lore.add("  " + getPrefix() + "✨ Potion Throw §8(Left Click)");
-        lore.add("  §fThrow a §erandom negative potions §finfront of you.");
+        lore.add("  " + getPrefix() + "🍷 Potion Throw §8(Left Click)");
+        lore.add("  §fThrow an §einsta damage potion §finfront of you.");
         lore.add("  §7(" + MobsV3.COOLDOWNS.getCooldown(name, token) + "s)");
 
         return lore;
@@ -107,10 +117,7 @@ public class WitchMob extends BaseMob {
         if (Cooldowns.handleCooldown(p, name + "-Alt")) return false;
 
         List<PotionEffect> effects = Arrays.asList(
-                new PotionEffect(PotionEffectType.WEAKNESS, 600, 1),
-                new PotionEffect(PotionEffectType.SLOW, 600, 1),
-                new PotionEffect(PotionEffectType.POISON, 600, 1),
-                new PotionEffect(PotionEffectType.HARM, 600, 1)
+                new PotionEffect(PotionEffectType.HARM, 600, 2)
         );
 
         Random random = new Random();

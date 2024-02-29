@@ -18,6 +18,16 @@ public class ResetMob extends BaseMob {
     }
 
     @Override
+    public String getPrimaryEmoji() {
+        return null;
+    }
+
+    @Override
+    public String getAltEmoji() {
+        return null;
+    }
+
+    @Override
     public String getAlt() {
         return null;
     }
@@ -28,7 +38,7 @@ public class ResetMob extends BaseMob {
     }
 
     @Override
-    public ArrayList<String> getLore(ItemStack token) {
+    public ArrayList<String> getLore(Player token) {
         return null;
     }
 
