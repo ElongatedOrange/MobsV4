@@ -12,9 +12,17 @@ public abstract class BaseMob {
 
     public abstract String getPrimaryEmoji();
 
+    public abstract boolean hasAltAbility();
+
     public abstract String getAltEmoji();
 
     public abstract String getAlt();
+
+    public abstract boolean hasAlt2Ability();
+
+    public abstract String getAlt2Emoji();
+
+    public abstract String getAlt2();
 
     public abstract int getHealth();
 
@@ -27,4 +35,7 @@ public abstract class BaseMob {
     public abstract void perform(Player player) throws ReflectiveOperationException;
 
     public abstract Boolean performAlt(Player player);
+
+    public abstract Boolean performAlt2(Player player);
+
 }

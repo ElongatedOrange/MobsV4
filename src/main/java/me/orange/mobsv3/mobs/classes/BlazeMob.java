@@ -31,6 +31,11 @@ public class BlazeMob extends BaseMob {
     }
 
     @Override
+    public boolean hasAltAbility() {
+        return true;
+    }
+
+    @Override
     public String getAltEmoji() {
         return "§c🎆";
     }
@@ -38,6 +43,21 @@ public class BlazeMob extends BaseMob {
     @Override
     public String getAlt() {
         return "Click";
+    }
+
+    @Override
+    public boolean hasAlt2Ability() {
+        return false;
+    }
+
+    @Override
+    public String getAlt2Emoji() {
+        return null;
+    }
+
+    @Override
+    public String getAlt2() {
+        return null;
     }
 
     @Override
@@ -173,6 +193,11 @@ public class BlazeMob extends BaseMob {
         }.runTaskTimer(MobsV3.MOBS, 0L, 1L); // Schedule to run every tick
 
         return true;
+    }
+
+    @Override
+    public Boolean performAlt2(Player player) {
+        return false;
     }
 
     private void createExplosion(Location loc, World world) {

@@ -3,17 +3,19 @@ package me.orange.mobsv3.mobs.classes;
 import me.orange.mobsv3.MobsV3;
 import me.orange.mobsv3.mobs.BaseMob;
 import me.orange.mobsv3.mobs.Cooldowns;
-import org.bukkit.Bukkit;
-import org.bukkit.Sound;
+import org.bukkit.*;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 
 public class CreeperMob extends BaseMob {
@@ -40,12 +42,32 @@ public class CreeperMob extends BaseMob {
     }
 
     @Override
+    public boolean hasAltAbility() {
+        return true;
+    }
+
+    @Override
     public String getAltEmoji() {
-        return null;
+        return getPrefix() + "🤯";
     }
 
     @Override
     public String getAlt() {
+        return "Click";
+    }
+
+    @Override
+    public boolean hasAlt2Ability() {
+        return false;
+    }
+
+    @Override
+    public String getAlt2Emoji() {
+        return null;
+    }
+
+    @Override
+    public String getAlt2() {
         return null;
     }
 
@@ -61,6 +83,10 @@ public class CreeperMob extends BaseMob {
         lore.add("§9Token Abilities:");
         lore.add("  " + getPrefix() + "💣 Boom! §8(Right Click)");
         lore.add("  §fTurn into a Explosive Menace!");
+        lore.add("  ");
+        lore.add("  " + getPrefix() + "🤯 Shockwave §8(Left Click)");
+        lore.add("  §fSpawn a §eShockwave to push away");
+        lore.add("  §fenemies");
         lore.add("  §7(" + MobsV3.COOLDOWNS.getCooldown(name, token) + "s)");
         return lore;
     }
@@ -127,7 +153,58 @@ public class CreeperMob extends BaseMob {
     }
 
     @Override
-    public Boolean performAlt(Player p) {
-        return null;
+    public Boolean performAlt(Player player) {
+        if (Cooldowns.handleCooldown(player, name + "-Alt")) return false;
+
+        final int durationTicks = 20; // Duration of the shockwave effect in ticks
+        final double maxRadius = 5.0; // Maximum radius of the shockwave
+        final World world = player.getWorld();
+        final Location center = player.getLocation();
+
+        // Sound effect for the shockwave initiation
+        world.playSound(center, Sound.ENTITY_GENERIC_EXPLODE, 1.0f, 1.0f);
+
+        // Particle effect for the shockwave
+        new BukkitRunnable() {
+            double radius = 0.0; // Starting radius
+
+            @Override
+            public void run() {
+                if (radius > maxRadius) {
+                    this.cancel(); // Stop the effect after reaching the maximum radius
+                    return;
+                }
+
+                for (int i = 0; i < 360; i += 10) { // Increment to control the density of the circle
+                    double radians = Math.toRadians(i);
+                    double x = center.getX() + (radius * Math.cos(radians));
+                    double z = center.getZ() + (radius * Math.sin(radians));
+                    Location particleLocation = new Location(world, x, center.getY(), z);
+                    world.spawnParticle(Particle.SWEEP_ATTACK, particleLocation, 1, 0, 0, 0, 0);
+                }
+
+                radius += 0.5; // Increment to control the speed of the shockwave expansion
+            }
+        }.runTaskTimer(MobsV3.MOBS, 0L, 1L); // Schedule the task to run every game tick
+
+        // Push other players away
+        List<Entity> nearbyEntities = player.getNearbyEntities(maxRadius, maxRadius, maxRadius);
+        for (Entity entity : nearbyEntities) {
+            if (entity instanceof Player && entity != player) {
+                Player otherPlayer = (Player) entity;
+                Vector direction = otherPlayer.getLocation().toVector().subtract(player.getLocation().toVector()).normalize();
+                otherPlayer.damage(30, player);
+                direction.multiply(2).setY(1.5);
+                otherPlayer.setVelocity(direction);
+            }
+        }
+
+        return true;
     }
+
+    @Override
+    public Boolean performAlt2(Player player) {
+        return false;
+    }
+
 }

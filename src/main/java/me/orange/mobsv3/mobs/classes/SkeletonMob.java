@@ -4,21 +4,18 @@ import me.orange.mobsv3.MobsV3;
 import me.orange.mobsv3.hex.HexUtils;
 import me.orange.mobsv3.mobs.BaseMob;
 import me.orange.mobsv3.mobs.Cooldowns;
-import org.bukkit.Material;
-import org.bukkit.Sound;
-import org.bukkit.entity.ArmorStand;
+import org.bukkit.*;
 import org.bukkit.entity.Arrow;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.EquipmentSlot;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.util.EulerAngle;
+import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 public class SkeletonMob extends BaseMob {
     public static String name = "Skeleton";
@@ -35,16 +32,36 @@ public class SkeletonMob extends BaseMob {
 
     @Override
     public String getPrimaryEmoji() {
-        return getPrefix() + "🏹";
+        return ChatColor.WHITE + "🏹";
+    }
+
+    @Override
+    public boolean hasAltAbility() {
+        return true;
     }
 
     @Override
     public String getAltEmoji() {
-        return null;
+        return ChatColor.WHITE + "🦴";
     }
 
     @Override
     public String getAlt() {
+        return "Click";
+    }
+
+    @Override
+    public boolean hasAlt2Ability() {
+        return false;
+    }
+
+    @Override
+    public String getAlt2Emoji() {
+        return null;
+    }
+
+    @Override
+    public String getAlt2() {
         return null;
     }
 
@@ -61,6 +78,10 @@ public class SkeletonMob extends BaseMob {
         lore.add("  " + getPrefix() + "🏹 Arrow Barrage §8(Right Click)");
         lore.add("  §fShoots §e3 arrows §fin the");
         lore.add("  §fdirection you are facing");
+        lore.add("  ");
+        lore.add("  " + getPrefix() + "🦴 Bone Edge §8(Left Click)");
+        lore.add("  §fSpawns a §ebone spike §from the");
+        lore.add("  §fground where your enemies are");
         lore.add("  §7(" + MobsV3.COOLDOWNS.getCooldown(name, token) + "s)");
 
         return lore;
@@ -83,22 +104,7 @@ public class SkeletonMob extends BaseMob {
     public void perform(Player player) {
         if (Cooldowns.handleCooldown(player, name)) return;
 
-        List<ArmorStand> armorStands = new ArrayList<>();
-        for (int i = 0; i < 3; i++) {
-            int finalI = i;
-            ArmorStand armorStand = player.getWorld().spawn(player.getLocation(), ArmorStand.class, stand -> {
-                stand.setVisible(false);
-                stand.setGravity(false);
-                stand.setCanPickupItems(false);
-                stand.setHelmet(new ItemStack(Material.ARROW));
-                stand.setHeadPose(new EulerAngle(Math.toRadians(0), Math.toRadians(90 * finalI), 0));
-                stand.addEquipmentLock(EquipmentSlot.HEAD, ArmorStand.LockType.REMOVING_OR_CHANGING);
-            });
-            armorStands.add(armorStand);
-        }
-
         long initialDelay = 15;
-        AtomicInteger launchedArrows = new AtomicInteger(0);
 
         // Shoot 3 arrows in the direction the player is looking
         for (int i = 0; i < 3; i++) {
@@ -108,40 +114,102 @@ public class SkeletonMob extends BaseMob {
                 public void run() {
                     Arrow arrow = player.launchProjectile(Arrow.class);
                     arrow.setVelocity(player.getLocation().getDirection().multiply(5)); // Adjust speed
+                    // Tag the arrow with metadata
                     arrow.setDamage(5);
                     // Play shooting sound
                     player.playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1.0F, 1.0F);
-                    // Remove armor stands when the last arrow is launched
-                    if (launchedArrows.incrementAndGet() == 3) {
-                        armorStands.forEach(Entity::remove);
-                    }
                 }
             }.runTaskLater(MobsV3.MOBS, delay);
         }
+    }
+
+    @Override
+    public Boolean performAlt(Player performer) {
+        if (Cooldowns.handleCooldown(performer, name + "-Alt")) return false;
+
+        final double radius = 7.0; // Radius around the performer
+        List<Player> affectedPlayers = performer.getNearbyEntities(radius, radius, radius).stream()
+                .filter(e -> e instanceof Player && e != performer)
+                .map(e -> (Player) e)
+                .collect(Collectors.toList());
+
+        spawnParticles(performer);
+        for (Player target : affectedPlayers) {
+            target.setVelocity(new Vector(0, 2, 0)); // Launches the player up
+            // Delay spawning the bone structure to ensure players are not stuck inside
+            Bukkit.getScheduler().runTaskLater(MobsV3.MOBS, () -> {
+                spawnBoneStructure(target.getLocation());
+                target.damage(35, performer);
+            }, 5L);
+        }
+
+        return true;
+    }
+
+    @Override
+    public Boolean performAlt2(Player player) {
+        return false;
+    }
+
+    private void spawnBoneStructure(Location location) {
+        World world = location.getWorld();
+        int groundY = world.getHighestBlockYAt(location) + 1; // Get the highest ground y-coordinate
+
+        // Adjust the y-coordinate so that the structure spawns on the ground
+        location.setY(groundY);
+
+        // Offsets for the bone structure
+        int[][] offsets = {
+                {0, 0, 0}, {1, 0, 0}, {-1, 0, 0}, {0, 0, 1}, {0, 0, -1}, // Base layer
+                {0, 1, 0}, {0, 2, 0}  // Upper layers
+        };
+
+        // Spawn the bone structure
+        for (int[] offset : offsets) {
+            Location loc = location.clone().add(offset[0], offset[1], offset[2]);
+            loc.getBlock().setType(Material.BONE_BLOCK);
+        }
+
+        // Logic to remove the bone blocks after some delay
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                for (int[] offset : offsets) {
+                    Location loc = location.clone().add(offset[0], offset[1], offset[2]);
+                    if (loc.getBlock().getType() == Material.BONE_BLOCK) {
+                        loc.getBlock().setType(Material.AIR);
+                    }
+                }
+            }
+        }.runTaskLater(MobsV3.MOBS, 20L * 5);
+    }
+
+    private void spawnParticles(Player player) {
+        World world = player.getWorld();
+        final double maxRadius = 7.0; // Maximum radius
+        final Particle.DustOptions whiteDustOptions = new Particle.DustOptions(Color.fromRGB(255, 255, 255), 1);
 
         new BukkitRunnable() {
-            double t = 0;
+            double radius = 0.5; // Start from a small circle
+
+            @Override
             public void run() {
-                if (launchedArrows.get() >= 3) {
-                    this.cancel();
+                if (radius > maxRadius) {
+                    this.cancel(); // Stop the loop when the radius exceeds the maximum
                     return;
                 }
 
-                t += Math.PI / 16;
-                double radius = 1.5;
-                for (int i = 0; i < armorStands.size(); i++) {
-                    ArmorStand stand = armorStands.get(i);
-                    double x = radius * Math.cos(t + i * 2 * Math.PI / armorStands.size());
-                    double z = radius * Math.sin(t + i * 2 * Math.PI / armorStands.size());
-                    stand.teleport(player.getLocation().add(x, 1.5, z));
+                // Create a circle with the current radius
+                for (int i = 0; i < 360; i += 10) {
+                    double angle = Math.toRadians(i);
+                    double x = radius * Math.cos(angle);
+                    double z = radius * Math.sin(angle);
+                    world.spawnParticle(Particle.REDSTONE, player.getLocation().add(x, 0, z), 1, 0, 0, 0, 0, whiteDustOptions);
                 }
+
+                radius += 0.5; // Increase the radius more quickly
             }
-        }.runTaskTimer(MobsV3.MOBS, 0, 1);
+        }.runTaskTimer(MobsV3.MOBS, 0L, 1L); // Schedule to run every tick
     }
 
-
-    @Override
-    public Boolean performAlt(Player player) {
-        return null;
-    }
 }

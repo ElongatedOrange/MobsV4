@@ -23,12 +23,32 @@ public class ResetMob extends BaseMob {
     }
 
     @Override
+    public boolean hasAltAbility() {
+        return false;
+    }
+
+    @Override
     public String getAltEmoji() {
         return null;
     }
 
     @Override
     public String getAlt() {
+        return null;
+    }
+
+    @Override
+    public boolean hasAlt2Ability() {
+        return false;
+    }
+
+    @Override
+    public String getAlt2Emoji() {
+        return null;
+    }
+
+    @Override
+    public String getAlt2() {
         return null;
     }
 
@@ -58,6 +78,11 @@ public class ResetMob extends BaseMob {
 
     @Override
     public Boolean performAlt(Player player) {
+        return null;
+    }
+
+    @Override
+    public Boolean performAlt2(Player player) {
         return null;
     }
 }

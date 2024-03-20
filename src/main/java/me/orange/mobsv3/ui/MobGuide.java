@@ -43,6 +43,7 @@ public class MobGuide implements Listener {
                 case "Turtle" -> Material.SCUTE;
                 case "Warden" -> Material.ECHO_SHARD;
                 case "Witch" -> Material.POTION;
+                case "Dragon" -> Material.DRAGON_HEAD;
             };
 
             inventory.setItem(slotIndex, createGuiItem(mat, "§6The " + mob.getName(),

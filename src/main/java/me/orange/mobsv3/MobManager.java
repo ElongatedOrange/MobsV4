@@ -29,6 +29,7 @@ public class MobManager implements CommandExecutor {
     public static ShulkerMob shulker = new ShulkerMob();
     public static WitchMob witch = new WitchMob();
     public static SkeletonMob skeleton = new SkeletonMob();
+    public static DragonMob dragon = new DragonMob();
 
     public static ArrayList<BaseMob> mobs = new ArrayList<>() {
         {
@@ -41,6 +42,7 @@ public class MobManager implements CommandExecutor {
             add(shulker);
             add(warden);
             add(skeleton);
+            add(dragon);
         }
     };
 

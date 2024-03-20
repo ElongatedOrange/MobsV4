@@ -38,6 +38,11 @@ public class WitchMob extends BaseMob {
     }
 
     @Override
+    public boolean hasAltAbility() {
+        return true;
+    }
+
+    @Override
     public String getAltEmoji() {
         return getPrefix() + "🍷";
     }
@@ -45,6 +50,21 @@ public class WitchMob extends BaseMob {
     @Override
     public String getAlt() {
         return "Click";
+    }
+
+    @Override
+    public boolean hasAlt2Ability() {
+        return false;
+    }
+
+    @Override
+    public String getAlt2Emoji() {
+        return null;
+    }
+
+    @Override
+    public String getAlt2() {
+        return null;
     }
 
     @Override
@@ -134,5 +154,10 @@ public class WitchMob extends BaseMob {
         thrownPotion.setPotionMeta(meta);
 
         return true;
+    }
+
+    @Override
+    public Boolean performAlt2(Player player) {
+        return false;
     }
 }

@@ -37,17 +37,6 @@ public final class MobsV3 extends JavaPlugin {
     private static MobsV3 instance;
     public static Cooldowns COOLDOWNS;
 
-    public static String levelHex = "#91f2d0";
-
-    public static void addPrefix(Player player, BaseMob mob) {
-        String name = mob.getPrefix() + "[" + mob.getName() + "] ";
-
-        if (player.getDisplayName().equals(name + player.getName())) return;
-
-        player.setDisplayName(name + player.getName());
-        player.setPlayerListName(player.getDisplayName());
-    }
-
     public static void setMob(Player player, BaseMob mob) {
         // Remove all current potion effects
         for (PotionEffect effect : player.getActivePotionEffects())
@@ -100,6 +89,8 @@ public final class MobsV3 extends JavaPlugin {
 
         Objects.requireNonNull(player.getAttribute(Attribute.GENERIC_MAX_HEALTH)).setBaseValue(mob.getHealth());
         player.setHealth(mob.getHealth());
+
+        Cooldowns.startActionBarUpdateTask(player, mob.getName());
 
         player.setPlayerListName(mob.getPrefix() + "[" + mob.getName() + "] " + player.getName());
         player.setDisplayName(mob.getPrefix() + "[" + mob.getName() + "] " + player.getName());
@@ -159,6 +150,7 @@ public final class MobsV3 extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new BlazeLavaListener(this), this);
         //getServer().getPluginManager().registerEvents(new FireballDamageListener(this), this);
         getServer().getPluginManager().registerEvents(new ArrowImpactListener(), this);
+        getServer().getPluginManager().registerEvents(new DragonFlyListener(), this);
         //getServer().getPluginManager().registerEvents(new SpecialEvents(this), this);
         getServer().getPluginManager().registerEvents(new MobGuide(), this);
         //getServer().getPluginManager().registerEvents(new RecipeManager(), this);

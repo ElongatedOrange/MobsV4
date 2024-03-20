@@ -4,6 +4,8 @@ import me.orange.mobsv3.MobManager;
 import me.orange.mobsv3.MobsV3;
 import me.orange.mobsv3.mobs.BaseMob;
 import me.orange.mobsv3.mobs.Cooldowns;
+import me.orange.mobsv3.mobs.classes.DragonMob;
+import me.orange.mobsv3.mobs.classes.ResetMob;
 import me.orange.mobsv3.ui.MobSelectTitle;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -22,10 +24,7 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.player.PlayerDropItemEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.inventory.AnvilInventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -38,6 +37,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 
 import static me.orange.mobsv3.mobs.Cooldowns.cooldownDisplayTasks;
 import static me.orange.mobsv3.mobs.Cooldowns.startActionBarUpdateTask;
@@ -58,7 +58,7 @@ public class EventManager implements Listener {
 
         if (item == null) return;
 
-        BaseMob mob = isToken(item); // Assuming isToken method determines if the item is a mob token and returns the associated mob
+        BaseMob mob = isToken(item);
 
         // Load player's assigned mob from playerData.yml
         File playerDataFile = new File(plugin.getDataFolder(), "playerData.yml");
@@ -75,6 +75,57 @@ public class EventManager implements Listener {
                 }
             }
             //MobsV3.MOBS.clearActionBarTaskForPlayer(p);
+        } else if (item.getType() == Material.DRAGON_EGG && !mobName.equals("Dragon")) {
+            if (event.getClickedBlock() == null) {
+                for (ItemStack slot : p.getInventory().getContents()) {
+                    if (slot == null || slot.getItemMeta() == null) {
+                        continue;
+                    }
+
+                    ItemMeta meta = slot.getItemMeta();
+
+                    if (isToken(slot) != null) {
+                        slot.subtract(64);
+                    }
+
+                    if (slot.getType() == Material.DRAGON_EGG) {
+                        slot.subtract(64);
+                    }
+                }
+
+                DragonMob mobSelected = new DragonMob();
+
+                MobsV3.setMob(p, new ResetMob());
+                MobsV3.setMob(p, mobSelected);
+
+                p.setPlayerListName(mobSelected.getPrefix() + "[" + mobSelected.getName() + "] " + p.getName());
+                p.setDisplayName(mobSelected.getPrefix() + "[" + mobSelected.getName() + "] " + p.getName());
+
+                Bukkit.getServer().getOnlinePlayers().forEach(
+                        player -> player.playSound(p.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 1.0f, 1.0f)
+                );
+
+                MobsV3.MOBS.scheduleTaskLater(
+                        () -> {
+                            assert mob != null;
+                            Cooldowns.startActionBarUpdateTask(p, mob.getName());
+                        }, 20L);
+            }
+        }
+    }
+
+    @EventHandler
+    public void onPlayerSneak(PlayerToggleSneakEvent event) {
+        Player player = event.getPlayer();
+        ItemStack item = player.getInventory().getItemInMainHand();
+
+        if (event.isSneaking()) {
+            BaseMob mob = isToken(item);
+
+            if (mob != null) {
+                if (mob.getAlt2() != null && mob.getAlt2().equalsIgnoreCase("crouch"))
+                    mob.performAlt2(event.getPlayer());
+            }
         }
     }
 

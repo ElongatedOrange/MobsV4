@@ -3,6 +3,7 @@ package me.orange.mobsv3.listeners;
 import me.orange.mobsv3.MobManager;
 import me.orange.mobsv3.MobsV3;
 import me.orange.mobsv3.mobs.BaseMob;
+import me.orange.mobsv3.mobs.Cooldowns;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -33,7 +34,15 @@ public class PlayerDeathAndRespawnListener implements Listener {
         String currentMobType = getCurrentMobType(player);
 
         if (currentMobType != null) {
-            mobTypesToReassign.put(player.getUniqueId(), currentMobType);
+            if (!currentMobType.equals("Dragon")) {
+                mobTypesToReassign.put(player.getUniqueId(), currentMobType);
+            } else {
+                mobTypesToReassign.put(player.getUniqueId(), "Chicken");
+            }
+        }
+
+        if ((currentMobType != null) && (currentMobType.equals("Dragon"))) {
+            event.getDrops().add(new ItemStack(Material.DRAGON_EGG));
         }
 
         // Prevent the Echo Shard "Token" from dropping
@@ -56,10 +65,11 @@ public class PlayerDeathAndRespawnListener implements Listener {
                         String mobType = mobTypesToReassign.get(playerUUID);
                         BaseMob mob = MobManager.findMobByName(mobType);
                         if (mob != null) {
-                            MobsV3.setMob(player, mob); // Ensure this method is correctly implemented to set the mob
+                            MobsV3.setMob(player, mob);
                             for (ArrayList<Object> effect : mob.getEffects()) {
                                 player.addPotionEffect(new PotionEffect((PotionEffectType) effect.get(0), INFINITE_DURATION, (Integer) effect.get(1), false, false, true));
                             }
+                            Cooldowns.startActionBarUpdateTask(player, mob.getName());
                         }
                         mobTypesToReassign.remove(playerUUID);
                     }

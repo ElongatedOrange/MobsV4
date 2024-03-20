@@ -23,11 +23,13 @@ public class Cooldowns {
     public HashMap<UUID, Integer> SLOWDOWN = new HashMap<>();
 
     public static HashMap<UUID, Long> TURTLE = new HashMap<>();
+    public static HashMap<UUID, Long> TURTLE_ALT = new HashMap<>();
     public static HashMap<UUID, Long> WARDEN = new HashMap<>();
     public static HashMap<UUID, Long> WARDEN_ALT = new HashMap<>();
     public static HashMap<UUID, Long> CREEPER = new HashMap<>();
     public static HashMap<UUID, Long> CREEPER_ALT = new HashMap<>();
     public static HashMap<UUID, Long> SKELETON = new HashMap<>();
+    public static HashMap<UUID, Long> SKELETON_ALT = new HashMap<>();
     public static HashMap<UUID, Long> CHICKEN = new HashMap<>();
     public static HashMap<UUID, Long> CHICKEN_ALT = new HashMap<>();
     public static HashMap<UUID, Long> BLAZE = new HashMap<>();
@@ -39,6 +41,7 @@ public class Cooldowns {
     public static HashMap<UUID, Long> VILLAGER_ALT = new HashMap<>();
     public static HashMap<UUID, Long> DRAGON = new HashMap<>();
     public static HashMap<UUID, Long> DRAGON_ALT = new HashMap<>();
+    public static HashMap<UUID, Long> DRAGON_ALT2 = new HashMap<>();
     public static HashMap<UUID, Long> SHULKER = new HashMap<>();
     public static HashMap<UUID, Long> SHULKER_ALT = new HashMap<>();
     public static HashMap<UUID, Long> PIGLIN = new HashMap<>();
@@ -51,15 +54,7 @@ public class Cooldowns {
     public static final HashMap<UUID, BukkitTask> cooldownDisplayTasks = new HashMap<>();
 
     public static boolean handleCooldown(Player p, String name) {
-        String isAlt = "";
-        String displayName = name;
-
-        if (name.contains("-Alt")) {
-            isAlt = " alternate";
-            displayName = displayName.replace("-Alt", "");
-        }
-
-        displayName = displayName.replace("_", " ");
+        String displayName = name.replaceAll("(-Alt|-Alt2)$", "").replace("_", " ");
 
         startActionBarUpdateTask(p, name); // Ensure the action bar update task is running
 
@@ -73,6 +68,7 @@ public class Cooldowns {
             return false; // Ability is ready to be used
         }
     }
+
 
     // Utility method to get the cooldown status of an ability for the action bar
     private static String getAbilityStatus(String abilityName, Player player) {
@@ -91,61 +87,47 @@ public class Cooldowns {
             return;
         }
 
+        // Cancel the existing task if there is one
         BukkitTask existingTask = cooldownDisplayTasks.get(player.getUniqueId());
         if (existingTask != null) {
-            // A task is already running for this player, no need to start another
-            return;
+            existingTask.cancel(); // Cancel the existing task
+            cooldownDisplayTasks.remove(player.getUniqueId()); // Remove from the map
         }
 
-        // Fetch the BaseMob instance; adjust for your implementation
-        BaseMob mob = MobManager.findMobByName(abilityName.replace("-Alt", ""));
+        BaseMob mob = MobManager.findMobByName(abilityName.replaceAll("(-Alt|-Alt2)$", ""));
         if (mob == null) {
             Bukkit.getLogger().warning("Mob not found for abilityName: " + abilityName);
             return;
         }
 
-        // Setup a task to update the action bar
+        // Schedule a new task to update the action bar
         BukkitTask actionBarTask = new BukkitRunnable() {
             @Override
             public void run() {
-                // Fetching the primary and alternate emojis
                 String primaryEmoji = mob.getPrimaryEmoji();
-                String altEmoji = mob.getAlt() != null && !mob.getAlt().isEmpty() ? mob.getAltEmoji() : "";
+                String altEmoji = mob.hasAltAbility() ? mob.getAltEmoji() : "";
+                String alt2Emoji = mob.hasAlt2Ability() ? mob.getAlt2Emoji() : ""; // Adjust for your implementation
 
-                // Adjusting the getAbilityStatus calls to use emojis
                 String primaryAbilityStatus = primaryEmoji + " " + getAbilityStatus(mob.getName(), player);
-                String altAbilityStatus = "";
+                String altAbilityStatus = !altEmoji.isEmpty() ? altEmoji + " " + getAbilityStatus(mob.getName() + "-Alt", player) : "";
+                String alt2AbilityStatus = !alt2Emoji.isEmpty() ? alt2Emoji + " " + getAbilityStatus(mob.getName() + "-Alt2", player) : "";
 
-                // If there's an alternate ability, fetch its cooldown status using the actual ability name
-                if (!altEmoji.isEmpty()) {
-                    String actualAltAbilityName = getActualAbilityName(mob.getName(), "Click");
-                    altAbilityStatus = altEmoji + " " + getAbilityStatus(actualAltAbilityName, player);
-                }
-
-                // Constructing the action bar message
                 String actionBarMessage = primaryAbilityStatus;
                 if (!altAbilityStatus.isEmpty()) {
                     actionBarMessage += " | " + altAbilityStatus;
                 }
+                if (!alt2AbilityStatus.isEmpty()) {
+                    actionBarMessage += " | " + alt2AbilityStatus;
+                }
 
                 player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(actionBarMessage));
             }
-        }.runTaskTimer(MobsV3.MOBS, 0L, 20L);
+        }.runTaskTimer(MobsV3.MOBS, 0L, 20L); // Adjust MobsV3.MOBS to your plugin instance
 
         cooldownDisplayTasks.put(player.getUniqueId(), actionBarTask);
     }
 
-    private static String getActualAbilityName(String mobName, String placeholder) {
-        if ("Witch".equals(mobName) && "Click".equals(placeholder)) {
-            return "Witch-Alt"; // Replace with the actual ability name
-        } else if ("Blaze".equals(mobName) && "Click".equals(placeholder)) {
-            return "Blaze-Alt"; // Replace with the actual ability name
-        } {
 
-        }
-        // Handle other mobs and abilities as needed
-        return placeholder; // Fallback to the placeholder if no mapping is found
-    }
 
     public static HashMap<UUID, Long> getType(String type) {
         HashMap<UUID, Long> COOLDOWN = new HashMap<>();
@@ -198,6 +180,14 @@ public class Cooldowns {
             COOLDOWN = CHICKEN_ALT;
         else if (type.equalsIgnoreCase("Villager-Alt")) {
             COOLDOWN = VILLAGER_ALT;
+        } else if (type.equalsIgnoreCase("Skeleton-Alt")) {
+            COOLDOWN = SKELETON_ALT;
+        } else if (type.equalsIgnoreCase("Turtle-Alt")) {
+            COOLDOWN = TURTLE_ALT;
+        } else if (type.equalsIgnoreCase("Creeper-Alt")) {
+            COOLDOWN = CREEPER_ALT;
+        } else if (type.equalsIgnoreCase("Dragon-Alt2")) {
+            COOLDOWN = DRAGON_ALT2;
         }
 
         return COOLDOWN;
