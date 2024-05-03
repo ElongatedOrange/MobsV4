@@ -4,6 +4,7 @@ import me.orange.mobsv3.MobManager;
 import me.orange.mobsv3.MobsV3;
 import me.orange.mobsv3.mobs.BaseMob;
 import me.orange.mobsv3.mobs.Cooldowns;
+import me.orange.mobsv3.mobs.classes.DragonMob;
 import me.orange.mobsv3.mobs.classes.ResetMob;
 import org.bukkit.ChatColor;
 import org.bukkit.Sound;
@@ -34,7 +35,7 @@ public class MobSelectTitle {
                 BaseMob mobSelected = MobManager.mobs.get(new Random().nextInt(MobManager.mobs.size() - 1) + 1);
 
                 while (mobSelected == lastMob
-                        //|| mobSelected instanceof EnderDragonMob
+                        || mobSelected instanceof DragonMob
                         || mobSelected instanceof ResetMob
                         || mobSelected == curMob)
                     mobSelected = MobManager.mobs.get(new Random().nextInt(MobManager.mobs.size() - 1) + 1);

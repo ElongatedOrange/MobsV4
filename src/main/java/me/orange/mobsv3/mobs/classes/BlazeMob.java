@@ -201,18 +201,18 @@ public class BlazeMob extends BaseMob {
     }
 
     private void createExplosion(Location loc, World world) {
-        int numberOfParticles = 150; // Increase number of particles for a bigger explosion
-        double spread = 1.5; // Increase spread for a wider explosion
+        int numberOfParticles = 150;
+        double spread = 1.5;
 
         for (int i = 0; i < numberOfParticles; i++) {
-            double angle = Math.random() * Math.PI * 2; // Random angle for horizontal direction
-            double zAngle = Math.random() * Math.PI * 2; // Random angle for vertical direction
+            double angle = Math.random() * Math.PI * 2;
+            double zAngle = Math.random() * Math.PI * 2;
             double x = Math.cos(angle) * Math.sin(zAngle);
             double y = Math.cos(zAngle);
             double z = Math.sin(angle) * Math.sin(zAngle);
 
-            Vector direction = new Vector(x, y, z).normalize().multiply(spread); // Apply spread to the direction
-            world.spawnParticle(Particle.FLAME, loc, 0, direction.getX(), direction.getY(), direction.getZ(), 0.2); // Increase speed for a more dynamic explosion
+            Vector direction = new Vector(x, y, z).normalize().multiply(spread);
+            world.spawnParticle(Particle.FLAME, loc, 0, direction.getX(), direction.getY(), direction.getZ(), 0.2);
         }
         world.playSound(loc, Sound.ENTITY_GENERIC_EXPLODE, 1F, 1F); // Explosion sound
     }
