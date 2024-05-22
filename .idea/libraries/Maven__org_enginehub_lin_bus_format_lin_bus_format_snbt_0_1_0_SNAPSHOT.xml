@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: org.enginehub.lin-bus.format:lin-bus-format-snbt:0.1.0-SNAPSHOT">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/enginehub/lin-bus/format/lin-bus-format-snbt/0.1.0-SNAPSHOT/lin-bus-format-snbt-0.1.0-20240331.033045-6.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/org/enginehub/lin-bus/format/lin-bus-format-snbt/0.1.0-SNAPSHOT/lin-bus-format-snbt-0.1.0-20240331.033045-6-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/enginehub/lin-bus/format/lin-bus-format-snbt/0.1.0-SNAPSHOT/lin-bus-format-snbt-0.1.0-20240331.033045-6-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
