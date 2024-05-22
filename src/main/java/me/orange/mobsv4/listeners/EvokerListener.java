@@ -56,7 +56,7 @@ public class EvokerListener implements Listener {
         FileConfiguration playerData = YamlConfiguration.loadConfiguration(playerDataFile);
 
         String mobType = playerData.getString(player.getUniqueId().toString() + ".mob");
-        // Check if the player's assigned mob is "evoker"
+        // Check if the player's assigned mob is evoker
         if ("evoker".equalsIgnoreCase(mobType)) {
             double healthAfterDamage = player.getHealth() - event.getFinalDamage();
             if (healthAfterDamage <= 0) {

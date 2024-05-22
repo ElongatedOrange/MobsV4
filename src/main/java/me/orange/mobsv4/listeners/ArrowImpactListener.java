@@ -22,7 +22,7 @@ public class ArrowImpactListener implements Listener {
 
                 // Apply knockback effect
                 Vector knock = arrow.getVelocity().normalize().multiply(-1);
-                hit.setVelocity(knock.multiply(0.5)); // Adjust knockback strength as needed
+                hit.setVelocity(knock.multiply(0.5)); // Adjust knockback strength
 
                 // Apply 2 hearts of true damage
                 double newHealth = hit.getHealth() - 3;

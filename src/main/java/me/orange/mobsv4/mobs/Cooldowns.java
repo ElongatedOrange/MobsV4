@@ -208,7 +208,6 @@ public class Cooldowns {
     }
 
 
-    // Modified getSeconds method to account for the "Cooldown Counter" item
     public static int getSeconds(HashMap<UUID, Long> COOLDOWN, Player player) {
         int defaultSeconds = 60;
         int cooldownCounterSeconds = 30; // Reduced cooldown duration

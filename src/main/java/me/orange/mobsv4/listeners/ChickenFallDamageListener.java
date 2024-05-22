@@ -28,9 +28,6 @@ public class ChickenFallDamageListener implements Listener {
             if (event.getEntity() instanceof Player) {
                 Player player = (Player) event.getEntity();
 
-                // Get the block at the player's location
-                Block blockBelow = player.getWorld().getBlockAt(player.getLocation().add(0, -0.5, 0));
-
                 // Load the player's mob type from playerData.yml
                 File playerDataFile = new File(plugin.getDataFolder(), "playerData.yml");
                 FileConfiguration playerData = YamlConfiguration.loadConfiguration(playerDataFile);

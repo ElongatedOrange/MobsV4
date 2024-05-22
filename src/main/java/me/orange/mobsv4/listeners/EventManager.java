@@ -75,10 +75,10 @@ public class EventManager implements Listener {
         if (mob != null && mob.getName().equals(mobName)) {
             if (event.getAction().toString().contains("RIGHT")) {
                 if (event.getClickedBlock() != null) event.setCancelled(true);
-                mob.perform(p); // Perform the primary action associated with the mob
+                mob.perform(p); // Perform the primary ability
             } else if (event.getAction().toString().contains("LEFT")) {
                 if (mob.getAlt() != null && mob.getAlt().equalsIgnoreCase("click")) {
-                    mob.performAlt(p); // Perform the alternate action associated with the mob
+                    mob.performAlt(p); // Perform the alt ability
                 }
             }
         } else if (item.getType() == Material.DRAGON_EGG && !mobName.equals("Dragon")) {
@@ -166,7 +166,7 @@ public class EventManager implements Listener {
             File playerDataFile = new File(MobsV4.getInstance().getDataFolder(), "playerData.yml");
             FileConfiguration playerData = YamlConfiguration.loadConfiguration(playerDataFile);
 
-            // Check if the player has the mob type "creeper"
+            // Check if the player has the mob type creeper
             String mobType = playerData.getString(player.getUniqueId().toString() + ".mob");
             if ("creeper".equalsIgnoreCase(mobType)) {
                 // Cancel the event to prevent damage

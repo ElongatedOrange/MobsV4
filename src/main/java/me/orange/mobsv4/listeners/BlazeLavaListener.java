@@ -33,7 +33,7 @@ public class BlazeLavaListener implements Listener {
             FileConfiguration playerData = YamlConfiguration.loadConfiguration(playerDataFile);
 
             String mobType = playerData.getString(player.getUniqueId().toString() + ".mob");
-            // Check if the player's assigned mob is "blaze"
+            // Check if the player's assigned mob is blaze
             if ("blaze".equalsIgnoreCase(mobType)) {
                 // Apply Strength 2 effect for 10 seconds
                 player.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, 200, 1, false, false, true));

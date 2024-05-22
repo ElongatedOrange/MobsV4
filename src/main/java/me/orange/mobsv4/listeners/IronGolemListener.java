@@ -29,7 +29,6 @@ public class IronGolemListener implements Listener {
                     Vector up = target.getVelocity().add(new Vector(0, 1.5, 0)); // Adjust the Y velocity component to launch the player up
                     target.setVelocity(up);
 
-                    // Optionally play a sound or particle effect
                     target.getWorld().playSound(target.getLocation(), Sound.ENTITY_IRON_GOLEM_ATTACK, 1.0f, 1.0f);
                 }, 1L); // Delay by 1 tick
             }

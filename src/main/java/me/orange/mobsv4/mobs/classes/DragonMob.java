@@ -192,7 +192,7 @@ public class DragonMob extends BaseMob {
                     world.spawnParticle(Particle.REDSTONE, blockLoc.clone().add(offsetX, 0, offsetZ), 1, 0, 0, 0, 0, darkPurpleDustOptions);
                 }
 
-                // Optionally, spawn dark purple redstone particles in a spiral around each affected entity
+                // Spawn dark purple redstone particles in a spiral around each affected entity
                 for (Entity entity : affectedEntities) {
                     Location entityLoc = entity.getLocation();
                     world.spawnParticle(Particle.REDSTONE, entityLoc.clone().add(offsetX, 0, offsetZ), 1, 0, 0, 0, 0, darkPurpleDustOptions);
@@ -202,7 +202,7 @@ public class DragonMob extends BaseMob {
             }
         }.runTaskTimer(MobsV4.MOBS, 0L, 1L); // Schedule to run every tick for smooth animation
 
-        // After 10 seconds, "throw" everything away
+        // After 10 seconds, throw everything away
         new BukkitRunnable() {
             @Override
             public void run() {
